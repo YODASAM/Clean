@@ -177,15 +177,24 @@
   <div id="hurray" class="hurray-popup" style="display:none;">HURRAY!</div>
 
   <script>
-    // === GET GROK KEY FROM VERCEL ENV (Injected at build) ===
-    const GROK_API_KEY = typeof process !== 'undefined' && process.env?.GROK_API_KEY 
-      ? process.env.GROK_API_KEY 
-      : (() => { 
-          alert('Error: GROK_API_KEY not set. Add it in Vercel Settings > Environment Variables.'); 
-          return null; 
-        })();
+    // === GROK KEY (Injected via Build Command) ===
+    const GROK_API_KEY = 'YOUR_GROK_API_KEY_HERE'; // Replaced at build with env var
 
-    if (!GROK_API_KEY) throw new Error('Missing GROK_API_KEY');
+    if (!GROK_API_KEY || GROK_API_KEY === 'YOUR_GROK_API_KEY_HERE') {
+      alert('Error: GROK_API_KEY not set. Check Vercel Build Command & Env Vars.');
+      // Fallback to static tasks
+      window.fetchTasks = function(room) {
+        const fallbacks = {
+          Kitchen: [`Wipe counters`, `Sweep floor`, `Take out trash`, `Clean sink`, `Organize cabinets`],
+          Bathroom: [`Scrub toilet`, `Clean mirror`, `Wipe sink`, `Mop floor`, `Restock towels`],
+          'Living Room': [`Dust surfaces`, `Vacuum carpet`, `Tidy cushions`, `Wipe TV`, `Organize remotes`],
+          Bedroom: [`Make bed`, `Fold clothes`, `Dust nightstand`, `Vacuum floor`, `Organize closet`]
+        };
+        tasks = fallbacks[room] || [`Wipe surfaces`, `Sweep floor`, `Take trash`, `Clean mirrors`, `Organize items`];
+        loading.style.display = 'none';
+        renderTasks();
+      };
+    }
 
     const ENCRYPT_KEY = 'cleanflow-secret-2025';
 
@@ -336,13 +345,13 @@
 
       } catch (e) {
         console.warn('Grok failed, using fallback');
-        tasks = [
-          `Wipe down surfaces`,
-          `Sweep or vacuum floor`,
-          `Take out trash`,
-          `Clean sink/mirror`,
-          `Organize items`
-        ];
+        const fallbacks = {
+          Kitchen: [`Wipe counters`, `Sweep floor`, `Take out trash`, `Clean sink`, `Organize cabinets`],
+          Bathroom: [`Scrub toilet`, `Clean mirror`, `Wipe sink`, `Mop floor`, `Restock towels`],
+          'Living Room': [`Dust surfaces`, `Vacuum carpet`, `Tidy cushions`, `Wipe TV`, `Organize remotes`],
+          Bedroom: [`Make bed`, `Fold clothes`, `Dust nightstand`, `Vacuum floor`, `Organize closet`]
+        };
+        tasks = fallbacks[room] || [`Wipe surfaces`, `Sweep floor`, `Take trash`, `Clean mirrors`, `Organize items`];
       }
 
       loading.style.display = 'none';
