@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CleanFlow: Swipe to Joy</title>
-  <meta name="description" content="Swipe cleaning tasks. No progress bar. Just joy, confetti, and done." />
+  <title>CleanFlow: Victory Jar</title>
+  <meta name="description" content="Finish rooms. Win golden tiles. Only victories remain." />
   <link rel="canonical" href="https://cleanflow.vercel.app" />
-  <meta property="og:title" content="CleanFlow – Swipe & Celebrate" />
-  <meta property="og:description" content="No pressure. Just swipe. Just joy." />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
@@ -20,6 +18,8 @@
       --card: white;
       --text: #1e293b;
       --gray: #94a3b8;
+      --jar-bg: #fefce8;
+      --jar-border: #fbbf24;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -31,8 +31,10 @@
       min-height: 100vh;
       overflow-x: hidden;
     }
-    .container { max-width: 480px; margin: 0 auto; }
+    .container { max-width: 1000px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; }
+    .main { flex: 1; min-width: 300px; }
     h1 { font-size: 1.8rem; text-align: center; margin-bottom: 1rem; color: var(--primary); }
+
     .room-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -84,6 +86,78 @@
     }
     .task-text { font-size: 1rem; }
 
+    .finish-btn {
+      display: block;
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 1rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 1rem;
+      margin-top: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .finish-btn:hover { background: #4338ca; }
+
+    /* === VICTORY JAR === */
+    .jar-container {
+      flex: 0 0 300px;
+      background: var(--jar-bg);
+      border: 3px solid var(--jar-border);
+      border-radius: 2rem;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(251, 191, 36, 0.15);
+      position: sticky;
+      top: 1rem;
+      max-height: 80vh;
+      overflow: hidden;
+    }
+    .jar-title {
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+    .jar {
+      width: 100%;
+      height: 320px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      border: 2px 2px dashed #fbbf24;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-end;
+      justify-content: center;
+      gap: 12px;
+      padding: 1rem;
+    }
+    .jar-tile {
+      width: 80px; height: 80px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: white;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      animation: bigDrop 0.8s ease forwards;
+      transform: translateY(-150px);
+      opacity: 0;
+    }
+    @keyframes bigDrop {
+      0% { transform: translateY(-150px) scale(0); opacity: 0; }
+      60% { transform: translateY(10px) scale(1.1); }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
     .hurray-popup {
       position: fixed;
       top: 50%;
@@ -116,8 +190,6 @@
       to { transform: translateY(120vh) rotate(720deg); opacity: 0; }
     }
 
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
     .back-btn {
       display: inline-flex;
       align-items: center;
@@ -141,35 +213,53 @@
       background: #f1f5f9;
       border-radius: 0.5rem;
     }
+
+    @media (max-width: 768px) {
+      .container { flex-direction: column; }
+      .jar-container { position: static; width: 100%; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>CleanFlow</h1>
-    <p style="text-align:center; color:var(--gray); margin-bottom:1.5rem;">
-      Pick a room. Swipe to finish. Feel the joy.
-    </p>
+    <!-- Main Task Area -->
+    <div class="main">
+      <h1>CleanFlow</h1>
+      <p style="text-align:center; color:var(--gray); margin-bottom:1.5rem;">
+        Finish rooms. Win golden tiles.
+      </p>
 
-    <!-- Room Selection -->
-    <div id="roomSelection" class="room-grid">
-      <div class="room-btn" data-room="Kitchen">Kitchen</div>
-      <div class="room-btn" data-room="Bathroom">Bathroom</div>
-      <div class="room-btn" data-room="Living Room">Living Room</div>
-      <div class="room-btn" data-room="Bedroom">Bedroom</div>
-    </div>
-
-    <!-- Task View -->
-    <div id="taskView" style="display:none;">
-      <div class="back-btn" id="backToRooms">
-        <i class="fas fa-arrow-left"></i> Change Room
+      <!-- Room Selection -->
+      <div id="roomSelection" class="room-grid">
+        <div class="room-btn" data-room="Kitchen">Kitchen</div>
+        <div class="room-btn" data-room="Bathroom">Bathroom</div>
+        <div class="room-btn" data-room="Living Room">Living Room</div>
+        <div class="room-btn" data-room="Bedroom">Bedroom</div>
       </div>
-      <h2 id="roomTitle"></h2>
-      <div id="taskList"></div>
-      <div class="share-url" id="shareUrl"></div>
+
+      <!-- Task View -->
+      <div id="taskView" style="display:none;">
+        <div class="back-btn" id="backToRooms">
+          <i class="fas fa-arrow-left"></i> Change Room
+        </div>
+        <h2 id="roomTitle"></h2>
+        <div id="taskList"></div>
+        <button id="finishCleaning" class="finish-btn" style="display:none;">
+          Finish Cleaning Session
+        </button>
+        <div class="share-url" id="shareUrl"></div>
+      </div>
+
+      <div id="loading" class="loading" style="display:none;">
+        <i class="fas fa-spinner fa-spin"></i> Loading tasks...
+      </div>
     </div>
 
-    <div id="loading" class="loading" style="display:none;">
-      <i class="fas fa-spinner fa-spin"></i> Asking Grok for smart tasks...
+    <!-- Victory Jar -->
+    <div class="jar-container">
+      <div class="jar-title">Victory Jar</div>
+      <div id="jar" class="jar"></div>
+      <p style="margin-top:0.5rem; font-size:0.8rem; color:var(--gray);">Only finished rooms stay.</p>
     </div>
   </div>
 
@@ -177,33 +267,12 @@
   <div id="hurray" class="hurray-popup" style="display:none;">HURRAY!</div>
 
   <script>
-    // === GROK KEY (Injected via Build Command) ===
-    const GROK_API_KEY = 'YOUR_GROK_API_KEY_HERE'; // Replaced at build with env var
-
-    if (!GROK_API_KEY || GROK_API_KEY === 'YOUR_GROK_API_KEY_HERE') {
-      alert('Error: GROK_API_KEY not set. Check Vercel Build Command & Env Vars.');
-      // Fallback to static tasks
-      window.fetchTasks = function(room) {
-        const fallbacks = {
-          Kitchen: [`Wipe counters`, `Sweep floor`, `Take out trash`, `Clean sink`, `Organize cabinets`],
-          Bathroom: [`Scrub toilet`, `Clean mirror`, `Wipe sink`, `Mop floor`, `Restock towels`],
-          'Living Room': [`Dust surfaces`, `Vacuum carpet`, `Tidy cushions`, `Wipe TV`, `Organize remotes`],
-          Bedroom: [`Make bed`, `Fold clothes`, `Dust nightstand`, `Vacuum floor`, `Organize closet`]
-        };
-        tasks = fallbacks[room] || [`Wipe surfaces`, `Sweep floor`, `Take trash`, `Clean mirrors`, `Organize items`];
-        loading.style.display = 'none';
-        renderTasks();
-      };
-    }
-
     const ENCRYPT_KEY = 'cleanflow-secret-2025';
-
-    // === STATE ===
     let currentRoom = '';
     let tasks = [];
     let completed = new Set();
+    let completedRooms = new Set();
 
-    // === ELEMENTS ===
     const roomSelection = document.getElementById('roomSelection');
     const taskView = document.getElementById('taskView');
     const roomTitle = document.getElementById('roomTitle');
@@ -212,8 +281,9 @@
     const shareUrl = document.getElementById('shareUrl');
     const backToRooms = document.getElementById('backToRooms');
     const hurray = document.getElementById('hurray');
+    const jar = document.getElementById('jar');
+    const finishBtn = document.getElementById('finishCleaning');
 
-    // === URL ENCRYPTION ===
     function encrypt(data) {
       return CryptoJS.AES.encrypt(JSON.stringify(data), ENCRYPT_KEY).toString();
     }
@@ -224,9 +294,12 @@
       } catch { return null; }
     }
 
-    // === UPDATE URL ===
     function updateURL() {
-      const state = { room: currentRoom, done: Array.from(completed) };
+      const state = {
+        room: currentRoom,
+        done: Array.from(completed),
+        rooms: Array.from(completedRooms)
+      };
       const encrypted = encrypt(state);
       const url = new URL(window.location);
       url.hash = encrypted;
@@ -234,9 +307,11 @@
       shareUrl.textContent = `Share: ${url.toString().slice(0, 60)}...`;
     }
 
-    // === RENDER TASKS ===
     function renderTasks() {
       taskList.innerHTML = '';
+      const allDone = tasks.length > 0 && completed.size === tasks.length;
+      finishBtn.style.display = allDone ? 'block' : 'none';
+
       tasks.forEach((task, i) => {
         const tile = document.createElement('div');
         tile.className = `task-tile ${completed.has(i) ? 'done' : ''}`;
@@ -251,16 +326,10 @@
             if (!startX) return;
             const x = e.touches ? e.touches[0].clientX : e.clientX;
             const diff = x - startX;
-            if (diff > 120) {
-              completeTask(i, tile);
-            } else {
-              tile.style.transform = `translateX(${diff}px) rotate(${diff/10}deg)`;
-            }
+            if (diff > 120) completeTask(i, tile);
+            else tile.style.transform = `translateX(${diff}px) rotate(${diff/10}deg)`;
           };
-          const onEnd = () => {
-            tile.style.transform = '';
-            startX = undefined;
-          };
+          const onEnd = () => { tile.style.transform = ''; startX = undefined; };
 
           tile.addEventListener('touchstart', onStart);
           tile.addEventListener('touchmove', onMove);
@@ -271,14 +340,18 @@
           tile.addEventListener('mouseleave', onEnd);
         }
         taskList.appendChild(tile);
-
-        if (!completed.has(i) && completed.size > 0) {
-          setTimeout(() => tile.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
-        }
       });
     }
 
-    // === EMOTIONAL SPIKE ===
+    function addRoomToJar(roomName) {
+      const tile = document.createElement('div');
+      tile.className = 'jar-tile';
+      tile.textContent = roomName;
+      tile.title = `${roomName} Complete!`;
+      jar.appendChild(tile);
+      setTimeout(() => tile.style.animation = 'bigDrop 0.8s ease forwards', 100);
+    }
+
     function completeTask(index, tile) {
       if (completed.has(index)) return;
       completed.add(index);
@@ -305,69 +378,42 @@
       if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
       tile.style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
-      setTimeout(() => {
-        tile.style.background = 'linear-gradient(135deg, #ecfdf5, #d1fae5)';
-      }, 400);
+      setTimeout(() => tile.style.background = 'linear-gradient(135deg, #ecfdf5, #d1fae5)', 400);
+
+      if (completed.size === tasks.length && !completedRooms.has(currentRoom)) {
+        completedRooms.add(currentRoom);
+        setTimeout(() => {
+          jar.innerHTML = '';
+          Array.from(completedRooms).forEach(room => addRoomToJar(room));
+        }, 800);
+      }
     }
 
-    // === FETCH TASKS FROM GROK ===
-    async function fetchTasks(room) {
+    function loadTasks(room) {
       loading.style.display = 'block';
       taskList.innerHTML = '<p style="text-align:center;color:var(--gray);">Loading tasks...</p>';
 
-      try {
-        const res = await fetch('https://api.x.ai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${GROK_API_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: 'grok-beta',
-            messages: [{
-              role: 'user',
-              content: `Give me 5 short, priority-ordered cleaning tasks for the ${room}. 2 sentences max. Number them 1-5.`
-            }],
-            max_tokens: 150
-          })
-        });
-
-        if (!res.ok) throw new Error('API error');
-
-        const data = await res.json();
-        const text = data.choices[0].message.content;
-        tasks = text.split('\n')
-          .filter(line => /^\d+\./.test(line))
-          .map(line => line.replace(/^\d+\.\s*/, '').trim())
-          .slice(0, 5);
-
-        if (tasks.length === 0) throw new Error('No tasks');
-
-      } catch (e) {
-        console.warn('Grok failed, using fallback');
-        const fallbacks = {
-          Kitchen: [`Wipe counters`, `Sweep floor`, `Take out trash`, `Clean sink`, `Organize cabinets`],
-          Bathroom: [`Scrub toilet`, `Clean mirror`, `Wipe sink`, `Mop floor`, `Restock towels`],
-          'Living Room': [`Dust surfaces`, `Vacuum carpet`, `Tidy cushions`, `Wipe TV`, `Organize remotes`],
-          Bedroom: [`Make bed`, `Fold clothes`, `Dust nightstand`, `Vacuum floor`, `Organize closet`]
-        };
-        tasks = fallbacks[room] || [`Wipe surfaces`, `Sweep floor`, `Take trash`, `Clean mirrors`, `Organize items`];
-      }
+      const fallbacks = {
+        Kitchen: [`Wipe counters`, `Sweep floor`, `Take out trash`, `Clean sink`, `Organize cabinets`],
+        Bathroom: [`Scrub toilet`, `Clean mirror`, `Wipe sink`, `Mop floor`, `Restock towels`],
+        'Living Room': [`Dust surfaces`, `Vacuum carpet`, `Tidy cushions`, `Wipe TV`, `Organize remotes`],
+        Bedroom: [`Make bed`, `Fold clothes`, `Dust nightstand`, `Vacuum floor`, `Organize closet`]
+      };
+      tasks = fallbacks[room] || [`Wipe surfaces`, `Sweep floor`, `Take trash`, `Clean mirrors`, `Organize items`];
 
       loading.style.display = 'none';
       renderTasks();
     }
 
-    // === ROOM CLICK ===
     document.querySelectorAll('.room-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         currentRoom = btn.dataset.room;
         roomTitle.textContent = `${currentRoom} Cleaning`;
         roomSelection.style.display = 'none';
         taskView.style.display = 'block';
-        completed.clear();
+        completed = new Set();
         updateURL();
-        fetchTasks(currentRoom);
+        loadTasks(currentRoom);
       });
     });
 
@@ -377,7 +423,15 @@
       updateURL();
     });
 
-    // === LOAD FROM URL ===
+    finishBtn.addEventListener('click', () => {
+      if (confirm('Clear your Victory Jar and start fresh?')) {
+        jar.innerHTML = '';
+        completedRooms.clear();
+        updateURL();
+        finishBtn.style.display = 'none';
+      }
+    });
+
     window.addEventListener('load', () => {
       const hash = window.location.hash.slice(1);
       if (hash) {
@@ -385,18 +439,19 @@
         if (state && state.room) {
           currentRoom = state.room;
           completed = new Set(state.done || []);
+          completedRooms = new Set(state.rooms || []);
           roomTitle.textContent = `${currentRoom} Cleaning`;
           roomSelection.style.display = 'none';
           taskView.style.display = 'block';
-          fetchTasks(currentRoom);
+          jar.innerHTML = '';
+          Array.from(completedRooms).forEach(room => addRoomToJar(room));
+          loadTasks(currentRoom);
         }
       }
     });
 
-    // === CRYPTOJS ===
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js';
-    script.onload = () => {};
     document.head.appendChild(script);
   </script>
 </body>
